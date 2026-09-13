@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>UD 1 — Introducción al entorno web</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+
+  :root{
+    --bg:#0b1220; --bg2:#111b2e; --panel:#16233d; --line:#2a3b5c;
+    --text:#eef2fb; --muted:#a9b7d6; --accent:#f5a623; --accent2:#33c2ff;
+    --ok:#3ddc97; --warn:#ff6b6b;
+  }
+  body{transition:background .25s ease, color .25s ease;}
+  body.light-theme{--bg:#eef1f8; --bg2:#ffffff; --panel:#ffffff; --line:#d7deec; --text:#1a2338; --muted:#556184; --accent:#b5730a; --accent2:#0f7fb3; --ok:#1a8f5f; --warn:#c9403f; --heroline:#c7cfe4;}
+  *{box-sizing:border-box;}
+  html{font-size:calc(16px * var(--font-scale,1));}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:'Segoe UI',Calibri,Arial,sans-serif;
+    background:radial-gradient(1200px 800px at 80% -10%, var(--bg2), var(--bg));
+    color:var(--text); overflow:hidden;
+  }
+  .deck{position:relative;height:100vh;width:100%;max-width:var(--deck-max,100%);margin:0 auto;}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    justify-content:center; padding:6vh 8vw; opacity:0;
+    transition:opacity .35s ease; overflow-y:auto;
+  }
+  .slide.active{display:flex; opacity:1;}
+  .kicker{color:var(--accent2); letter-spacing:.15em; text-transform:uppercase; font-size:1.3rem; font-weight:700; margin-bottom:.5rem;}
+  h1{font-size:4rem; margin:.1em 0; line-height:1.1;}
+  h2{font-size:2.9rem; margin:.1em 0 .6em 0; color:var(--text);}
+  h3{font-size:1.9rem; color:var(--accent); margin:0 0 .3em 0;}
+  p{font-size:1.8rem; line-height:1.5; color:var(--text);}
+  strong{font-weight:700;}
+  .term{color:var(--accent); font-weight:800;}
+  .accent-text{color:var(--accent2); font-weight:600;}
+  .muted{color:var(--muted);}
+  .cols{display:flex; gap:4vw; align-items:center; width:100%;}
+  .col{flex:1;}
+  .line{margin:0 0 .5em 0;}
+  .line.bulleted{display:flex; gap:.55em;}
+  .line.bulleted .bullet{flex:0 0 auto; color:var(--muted);}
+  .byline{color:var(--muted); font-size:1.2rem; font-weight:400; margin-top:1.8rem; letter-spacing:.02em;}
+  .badge{display:inline-block; background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:.3em 1em; font-size:1.2rem; color:var(--accent2); margin-bottom:1em;}
+  .progress{position:absolute; bottom:0; left:0; height:6px; background:linear-gradient(90deg,var(--accent2),var(--accent)); transition:width .35s ease;}
+  .nav{position:fixed; bottom:2vh; right:3vw; display:flex; gap:.6rem; z-index:10;}
+  .nav button{background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:.6em 1.1em; font-size:1rem; cursor:pointer;}
+  .nav button:hover{border-color:var(--accent2);}
+  .counter{position:fixed; top:2vh; right:3vw; color:var(--muted); font-size:1rem; z-index:10;}
+  .deck-header{position:absolute; top:2vh; left:8vw; right:20vw; color:var(--muted); font-size:.95rem; z-index:10; display:flex; gap:.6em; align-items:baseline; white-space:nowrap; overflow:hidden; background:rgba(11,18,32,.72); backdrop-filter:blur(4px); padding:.3em .7em; border-radius:9px;}
+  .deck-header .ud{color:var(--accent2); font-weight:700; flex:0 0 auto;}
+  .deck-header .titulo{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  body.light-theme .deck-header{background:rgba(255,255,255,.75);}
+  svg{display:block;}
+  .center{align-items:center; text-align:center;}
+  .hero{background-size:cover; background-position:center;}
+  .hero::before{content:'';position:absolute; inset:0; background:linear-gradient(180deg, rgba(11,18,32,.45) 0%, rgba(11,18,32,.75) 55%, rgba(11,18,32,.96) 100%); z-index:0;}
+  .hero > *{position:relative; z-index:1;}
+  .hero-content{display:inline-block; max-width:92%;}
+  body.light-theme .hero{filter:brightness(1.12) contrast(.92) saturate(.85);}
+  body.light-theme .hero::before{background:linear-gradient(180deg, rgba(238,241,248,.2) 0%, rgba(238,241,248,.55) 55%, rgba(238,241,248,.85) 100%);}
+  body.light-theme .hero-content{background:rgba(255,255,255,.8); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-radius:22px; padding:1.7rem 2.3rem; box-shadow:0 10px 30px rgba(20,30,60,.15);}
+  body.light-theme .hero, body.light-theme .hero h1, body.light-theme .hero p, body.light-theme .hero .muted{color:#101728;}
+  .slide-img{width:auto; max-width:min(55%, 600px); max-height:34vh; object-fit:contain; flex:0 1 auto; min-width:0; min-height:0; display:block; margin:.8rem auto; border-radius:10px; border:1px solid var(--line); background:#fff; padding:.6rem;}
+  .slide-img.small{max-width:min(38%, 380px); max-height:22vh;}
+  .page-img{max-width:100%; max-height:86vh; display:block; margin:0 auto; border-radius:6px; border:1px solid var(--line); background:#fff;}
+  pre{background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent2); border-radius:0 10px 10px 0; padding:1rem 1.4rem; overflow-x:auto; margin:1rem 0;}
+  code{font-family:'Consolas','Courier New',monospace; font-size:1.4rem; color:var(--text); white-space:pre;}
+  table{border-collapse:collapse; width:100%; margin:1rem 0; font-size:1.4rem;}
+  table th, table td{border:1px solid var(--line); padding:.5em .8em; text-align:left;}
+  table th{background:var(--panel); color:var(--accent2);}
+  .content-wrap{width:100%; max-height:82vh; overflow-y:auto; padding-right:.5em; display:flex; flex-direction:column; gap:.2rem;}
+  .content-wrap > *{flex:0 0 auto;}
+  .content-wrap > .slide-img{flex:0 1 auto;}
+  .ctrl-bar{position:fixed; bottom:2vh; left:3vw; z-index:20; display:flex; flex-direction:column-reverse; align-items:flex-start; gap:.6rem;}
+  .gear-btn{background:rgba(22,35,61,.55); color:var(--text); border:1px solid rgba(255,255,255,.18); border-radius:50%; width:2.6em; height:2.6em; font-size:1.15rem; line-height:1; cursor:pointer; backdrop-filter:blur(4px); opacity:.55; transition:opacity .2s,border-color .2s,transform .2s;}
+  body.light-theme .gear-btn{background:rgba(255,255,255,.6); border:1px solid rgba(0,0,0,.12);}
+  .gear-btn:hover{opacity:1; border-color:var(--accent2);}
+  .gear-btn.open{opacity:1; border-color:var(--accent2); transform:rotate(45deg);}
+  .ctrl-panel{display:none; flex-direction:column; gap:.5rem; background:rgba(22,35,61,.55); border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:.7rem; backdrop-filter:blur(6px);}
+  body.light-theme .ctrl-panel{background:rgba(255,255,255,.75); border:1px solid rgba(0,0,0,.12);}
+  .ctrl-panel.open{display:flex;}
+  .ctrl-panel button{background:rgba(255,255,255,.08); color:var(--text); border:1px solid rgba(255,255,255,.18); border-radius:10px; padding:.5em .9em; font-size:.85rem; cursor:pointer; transition:border-color .2s,color .2s;}
+  body.light-theme .ctrl-panel button{background:rgba(0,0,0,.05); border:1px solid rgba(0,0,0,.12);}
+  .ctrl-panel button:hover{border-color:var(--accent2);}
+  .ctrl-panel button.active{border-color:var(--accent); color:var(--accent);}
+  #themeToggle{font-size:1.1rem; padding:.4em .7em; align-self:flex-start;}
+  .font-ctrl{display:flex; gap:.4rem;}
+  .width-ctrl{display:flex; flex-wrap:wrap; gap:.4rem;}
+  .reset-btn{width:100%; text-align:center; margin-top:.15rem; border-top:1px solid rgba(255,255,255,.12); padding-top:.6rem !important;}
+  body.light-theme .reset-btn{border-top:1px solid rgba(0,0,0,.1);}
+
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+<div class="deck-header" id="deckHeader"><span class="ud">UD 1</span><span class="titulo">Introducción al entorno web</span></div>
+
+<section class="slide center hero" style="background-image:url('media/stock/hero-web.jpg')">
+<div class="content-wrap center">
+<div class="hero-content">
+<h1>Introducción al entorno web</h1>
+<p style="font-size:1.9rem;">2ASIR - Implantación de aplicaciones web</p>
+<p style="font-size:1.9rem;">Profesor: Roberto Tubilleja Calvo</p>
+</div>
+</div>
+</section>
+<section class="slide">
+<h2>Introducción</h2>
+<div class="content-wrap">
+<p class="line">Día a día utilizamos aplicaciones web y cada vez con más frecuencia.</p>
+<p class="line">Así pues, la popularización de <strong>www</strong> y la de otros servicios de internet ha propiciado un cambio en la concepción de las aplicaciones tal y como las conocíamos.</p>
+</div>
+</section>
+<section class="slide">
+<h2>Aplicaciones web VS tradicionales I</h2>
+<div class="content-wrap">
+<p class="line">Todo y que cada vez utilizamos <strong>más aplicaciones web</strong>, hay muchos campos en los que aun prevalecen las aplicaciones de escritorio.</p>
+<p class="line">Ventajas del software web:</p>
+<p class="line" style="margin-left:1.50rem; font-size:1.71rem"><strong class="term">Multiplataforma</strong>: la mayoría de las aplicaciones web son multiplataforma. Tenemos 1 aplicación para todos los sistemas operativos.</p>
+<p class="line" style="margin-left:1.50rem; font-size:1.71rem"><strong class="term">Software</strong>: solo necesitamos un navegador web, no tenemos problemas de librerías, versiones de SO …</p>
+</div>
+</section>
+<section class="slide">
+<h2>Aplicaciones web VS tradicionales II</h2>
+<div class="content-wrap">
+<p class="line" style="margin-left:1.50rem; font-size:1.71rem"><strong class="term">Centralización</strong>: toda la información esta centralizada en los servidores. Fácil acceso y no repetición de la información.</p>
+<p class="line" style="margin-left:1.50rem; font-size:1.71rem"><strong class="term">Seguridad</strong>: las aplicaciones web suelen tener vulnerabilidades, pero el hecho de estar la información centralizada nos permite hacer copias de seguridad más efectivas. </p>
+<p class="line" style="margin-left:1.50rem; font-size:1.71rem"><strong class="term">Versiones</strong>: nos aseguramos siempre el acceso a la última versión de la aplicación.</p>
+<p class="line" style="margin-left:1.50rem; font-size:1.71rem"><strong class="term">Movilidad</strong>: podemos acceder desde cualquier lugar con ordenador, movil y conexión a la red.</p>
+</div>
+</section>
+<section class="slide">
+<h2>Características de las aplicaciones web I</h2>
+<div class="content-wrap">
+<p class="line bulleted"><span class="bullet">•</span><span> Se ejecutan en un <strong>servidor</strong> (<strong>físico</strong> o <strong>virtual</strong>)</span></p>
+<p class="line bulleted"><span class="bullet">•</span><span> Pueden atender a <strong>miles de usuarios</strong> simultáneos</span></p>
+<p class="line bulleted" style="margin-left:1.08rem; font-size:1.71rem"><span class="bullet">◦</span><span>Es habitual que varios servidores atiendan única aplicación web </span></p>
+<p class="line bulleted" style="margin-left:3.32rem; font-size:1.62rem"><span class="bullet">▪</span><span><strong>escalabilidad</strong> y <strong>tolerancia a fallos</strong></span></p>
+<p class="line bulleted" style="margin-left:1.08rem; font-size:1.71rem"><span class="bullet">◦</span><span> Se ejecutan <strong>dentro de un servidor web</strong></span></p>
+<p class="line bulleted" style="margin-left:1.08rem; font-size:1.71rem"><span class="bullet">◦</span><span>Formadas por código y por recursos (<strong>imágenes, documentos </strong><strong>html</strong><strong>, </strong><strong>css</strong><strong>, </strong><strong>js</strong>,…)</span></p>
+</div>
+</section>
+<section class="slide">
+<h2>Características de las aplicaciones web II</h2>
+<div class="content-wrap">
+<p class="line bulleted" style="margin-left:1.49rem; font-size:1.71rem"><span class="bullet">◦</span><span>Utilizan servicios adicionales: <strong>bases de datos, servidor de correo</strong>, …</span></p>
+<p class="line bulleted" style="margin-left:1.49rem; font-size:1.71rem"><span class="bullet">◦</span><span>Requieren de un proceso de <strong>instalación</strong> y <strong>configuración</strong> (<strong>despliegue</strong>) en el servidor o servidores</span></p>
+</div>
+</section>
+<section class="slide">
+<h2>Arquitecturas</h2>
+<div class="content-wrap">
+<p class="line">En el  mundo de Internet encontramos distintas arquitecturas, entre las cuales destacamos:</p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span> Arquitectura <strong class="term">cliente-servidor</strong></span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span> Arquitectura <strong class="term">P2P</strong></span></p>
+<p class="line">Cada arquitectura tiene sus características y estas la hacen adecuada para un determinado tipo de tareas.</p>
+<img class="slide-img" src="media/stock/server-room.jpg" alt="Sala de servidores (Unsplash)">
+</div>
+</section>
+<section class="slide">
+<h2>Arquitectura cliente-servidor I</h2>
+<div class="content-wrap">
+<p class="line">La capacidad de proceso esta dividida entre el cliente y el servidor.</p>
+<p class="line">El servidor no tiene porque ser únicamente una máquina,  o bien no tiene porque ofrecer únicamente un servicio.</p>
+<p class="line">Hay distintos tipos de servidores, por ejemplo:</p>
+<p class="line bulleted" style="margin-left:2.24rem; font-size:1.62rem"><span class="bullet">▪</span><span> Servidores de impresión</span></p>
+<p class="line bulleted" style="margin-left:2.24rem; font-size:1.62rem"><span class="bullet">▪</span><span> Servidores web</span></p>
+<p class="line bulleted" style="margin-left:2.24rem; font-size:1.62rem"><span class="bullet">▪</span><span> Servidores de ficheros</span></p>
+<p class="line bulleted" style="margin-left:2.24rem; font-size:1.62rem"><span class="bullet">▪</span><span> Servidores DNS</span></p>
+<p class="line bulleted" style="margin-left:2.24rem; font-size:1.62rem"><span class="bullet">▪</span><span> …</span></p>
+<img class="slide-img" src="media/ud1_s08_img1.png" alt="Imagen diapositiva">
+</div>
+</section>
+<section class="slide">
+<h2>Arquitectura cliente-servidor II</h2>
+<div class="content-wrap">
+<p class="line bulleted"><span class="bullet">•</span><span>  <strong>Cliente</strong>:</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span> Inicia solicitudes o peticiones (activo)</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span> Espera y recibe respuestas del servidor</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span> Puede conectarse a varios servidores a la vez</span></p>
+<p class="line bulleted"><span class="bullet">•</span><span>  <strong>Servidor</strong>:</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span>Espera las peticiones de los clientes (pasivo)</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span>Una vez recibida una petición, la procesa y contesta</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span>Acepta peticiones de varios clientes</span></p>
+</div>
+</section>
+<section class="slide">
+<h2>Arquitectura cliente-servidor III</h2>
+<div class="content-wrap">
+<p class="line bulleted"><span class="bullet">•</span><span> <strong> Ventajas</strong>:</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span> Centralización</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span> Escalabilidad</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span> Fácil mantenimiento</span></p>
+<p class="line bulleted"><span class="bullet">•</span><span> <strong> Inconvenientes</strong>:</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span>Congestión</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span>Si el servidor cae, toda la información deja de ser accesible</span></p>
+</div>
+</section>
+<section class="slide">
+<h2>Arquitectura P2P</h2>
+<div class="content-wrap">
+<p class="line">A diferencia del modelo cliente-servidor, en la arquitectura <strong>P</strong>eer <strong>2</strong> <strong>P</strong>eer no existe un servidor central que ofrezca un servicio, sino que son los propios nodos los que lo ofrecen.</p>
+<p class="line">Cada nodo puede funcionar como cliente y como servidor y el enlace se hará directamente de un nodo a otro nodo.</p>
+<p class="line">Es utilizado en distintos tipos de software, pero sobretodo se ha hecho popular en el intercambio de ficheros.</p>
+<img class="slide-img" src="media/ud1_s11_img2.png" alt="Imagen diapositiva">
+</div>
+</section>
+<section class="slide">
+<h2>Arquitectura de 3 niveles</h2>
+<div class="content-wrap">
+<p class="line">En la arquitectura de 3 niveles entra en juego un nuevo componente. Esta compuesta por:</p>
+<p class="line bulleted" style="margin-left:2.61rem; font-size:1.62rem"><span class="bullet">▪</span><span> <strong class="term">Cliente</strong></span></p>
+<p class="line bulleted" style="margin-left:2.61rem; font-size:1.62rem"><span class="bullet">▪</span><span> <strong class="term">Servidor de aplicaciones</strong> → proporciona los recursos solicitados con la ayuda del servidor de datos (aquí el servidor también es un cliente)</span></p>
+<p class="line bulleted" style="margin-left:2.61rem; font-size:1.62rem"><span class="bullet">▪</span><span><strong class="term">Servidor de datos</strong> → proporciona al servidor de aplicaciones los datos solicitados</span></p>
+<img class="slide-img" src="media/ud1_s12_img3.png" alt="Imagen diapositiva">
+</div>
+</section>
+<section class="slide">
+<h2>Servidores web I</h2>
+<div class="content-wrap">
+<p class="line">Un <strong class="term">servidor web </strong>es un programa o conjunto de ellos que se encarga de procesar las peticiones HTTP que recibe. Utiliza la arquitectura cliente-servidor y el funcionamiento es el siguiente:</p>
+<p class="line bulleted" style="margin-left:3.72rem; font-size:1.62rem"><span class="bullet">▪</span><span>Espera peticiones por el puerto asignado (normalmente 80 para HTTP)</span></p>
+<p class="line bulleted" style="margin-left:3.72rem; font-size:1.62rem"><span class="bullet">▪</span><span>Cuando recibe una petición → procesa la información y busca el recurso que se le pide</span></p>
+<p class="line bulleted" style="margin-left:3.72rem; font-size:1.62rem"><span class="bullet">▪</span><span>Envía el recurso al cliente</span></p>
+<p class="line">La web en sus orígenes era <strong class="term">estática</strong>. Hoy en día prácticamente todas las páginas web creadas tienen componentes <strong class="term">dinámicos</strong>.</p>
+</div>
+</section>
+<section class="slide">
+<h2>Servidores web II</h2>
+<div class="content-wrap">
+<p class="line">Una página web estática es una serie de recursos que se encuentran en el servidor:</p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span>  HTML</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span>  Imágenes</span></p>
+<p class="line bulleted" style="margin-left:3.01rem; font-size:1.62rem"><span class="bullet">▪</span><span>  Documentos</span></p>
+<p class="line">Estos recursos se pueden consultar o descargar.</p>
+<p class="line">En una página web dinámica partimos de una base estática acompañada de contenidos dinámicos, es decir, generados o calculados.</p>
+</div>
+</section>
+<section class="slide">
+<h2>Ejemplo servidor web</h2>
+<div class="content-wrap">
+<img class="slide-img" src="media/ud1_s15_img4.png" alt="Imagen diapositiva">
+</div>
+</section>
+<section class="slide">
+<h2>Servidor web - Software</h2>
+<div class="content-wrap">
+<p class="line">Competidores:</p>
+<p class="line bulleted" style="margin-left:1.84rem; font-size:1.71rem"><span class="bullet">◦</span><span> Apache → Open Source</span></p>
+<p class="line bulleted" style="margin-left:1.84rem; font-size:1.71rem"><span class="bullet">◦</span><span> IIS (Internet Information Services) → Privativo, de Microsoft</span></p>
+<p class="line bulleted" style="margin-left:1.84rem; font-size:1.71rem"><span class="bullet">◦</span><span> Nginx → Open Source</span></p>
+<p class="line">Busca y compara las prestaciones de los diferentes servidores que hay en el mercado. Observa características como: multiplataforma, precio, requisitos mínimos, administración, etc.</p>
+</div>
+</section>
+<section class="slide">
+<h2>Apache</h2>
+<div class="content-wrap">
+<p class="line bulleted"><span class="bullet">•</span><span>  Open Source</span></p>
+<p class="line bulleted"><span class="bullet">•</span><span>  Multiplataforma</span></p>
+<p class="line bulleted"><span class="bullet">•</span><span>  Líder en el mercado</span></p>
+<p class="line bulleted"><span class="bullet">•</span><span>  Funcionalidad adicional mediante módulos:</span></p>
+<p class="line bulleted" style="margin-left:4.51rem; font-size:1.53rem"><span class="bullet">‣</span><span>PHP</span></p>
+<p class="line bulleted" style="margin-left:4.51rem; font-size:1.53rem"><span class="bullet">‣</span><span>SSL (comunicaciones seguras de red)</span></p>
+<p class="line bulleted" style="margin-left:4.51rem; font-size:1.53rem"><span class="bullet">‣</span><span>…</span></p>
+<img class="slide-img small" src="media/logos/apache-logo.svg" alt="Logo de Apache HTTP Server">
+</div>
+</section>
+<section class="slide">
+<h2>IIS</h2>
+<div class="content-wrap">
+<p class="line bulleted"><span class="bullet">•</span><span>  Microsoft</span></p>
+<p class="line bulleted"><span class="bullet">•</span><span>  Integrado en Windows</span></p>
+<p class="line bulleted"><span class="bullet">•</span><span>  Soporte para las tecnologías de Microsoft</span></p>
+<p class="line bulleted" style="margin-left:4.51rem; font-size:1.53rem"><span class="bullet">‣</span><span>ASP.net</span></p>
+<p class="line bulleted" style="margin-left:4.51rem; font-size:1.53rem"><span class="bullet">‣</span><span>Front Page</span></p>
+<p class="line bulleted" style="margin-left:4.51rem; font-size:1.53rem"><span class="bullet">‣</span><span>…</span></p>
+<img class="slide-img small" src="media/logos/iis-logo.png" alt="Logo de Microsoft IIS">
+</div>
+</section>
+<section class="slide">
+<h2>Nginx</h2>
+<div class="content-wrap">
+<p class="line bulleted"><span class="bullet">•</span><span>Open Source</span></p>
+<p class="line bulleted"><span class="bullet">•</span><span>Alto rendimiento: arquitectura asíncrona orientada a eventos</span></p>
+<p class="line bulleted"><span class="bullet">•</span><span>Muy usado como proxy inverso y balanceador de carga</span></p>
+<p class="line bulleted"><span class="bullet">•</span><span>Funcionalidad adicional mediante módulos:</span></p>
+<p class="line bulleted" style="margin-left:4.51rem; font-size:1.53rem"><span class="bullet">‣</span><span>PHP (mediante FastCGI)</span></p>
+<p class="line bulleted" style="margin-left:4.51rem; font-size:1.53rem"><span class="bullet">‣</span><span>SSL (comunicaciones seguras de red)</span></p>
+<p class="line bulleted" style="margin-left:4.51rem; font-size:1.53rem"><span class="bullet">‣</span><span>…</span></p>
+<img class="slide-img small" src="media/logos/nginx-logo.svg" alt="Logo de Nginx">
+</div>
+</section>
+<section class="slide center hero" style="background-image:url('media/stock/hero-web.jpg')">
+<div class="content-wrap center">
+<div class="hero-content">
+<div class="kicker">UD 1</div>
+<h1>Fin de la unidad</h1>
+<p class="muted" style="font-size:1.9rem;">Introducción al entorno web</p>
+</div>
+</div>
+</section>
+
+</div>
+
+<div class="counter"><span id="cur">1</span> / <span id="tot"></span></div>
+<div class="progress" id="progress"></div>
+<div class="ctrl-bar" id="ctrlBar">
+  <div class="ctrl-panel" id="ctrlPanel">
+    <button id="themeToggle" title="Cambiar modo claro/oscuro">🌙</button>
+    <div class="font-ctrl" id="fontCtrl" title="Tamaño del texto">
+      <button id="fontDec">A－</button>
+      <button id="fontInc">A＋</button>
+    </div>
+    <div class="width-ctrl" id="widthCtrl" title="Ajustar ancho de la diapositiva en pantallas panorámicas">
+      <button data-w="100%">Completo</button>
+      <button data-w="1600px">1600px</button>
+      <button data-w="1200px">1200px</button>
+      <button data-w="900px">900px</button>
+    </div>
+    <button id="resetCtrl" class="reset-btn" title="Restablecer valores por defecto">↺ Restablecer</button>
+  </div>
+  <button id="ctrlToggle" class="gear-btn" title="Opciones de visualización">⚙</button>
+</div>
+<div class="nav">
+  <button id="btnPrev" onclick="go(-1)">◀ Anterior</button>
+  <button id="btnNext" onclick="go(1)">Siguiente ▶</button>
+</div>
+
+<script>
+
+  const slides = document.querySelectorAll('.slide');
+  let i = 0;
+  document.getElementById('tot').textContent = slides.length;
+  function render(){
+    slides.forEach((s,idx)=>s.classList.toggle('active', idx===i));
+    document.getElementById('cur').textContent = i+1;
+    document.getElementById('progress').style.width = ((i+1)/slides.length*100)+'%';
+    document.getElementById('btnPrev').style.visibility = (i===0) ? 'hidden' : 'visible';
+    document.getElementById('btnNext').style.visibility = (i===slides.length-1) ? 'hidden' : 'visible';
+    document.getElementById('deckHeader').style.display = (i===0) ? 'none' : 'flex';
+  }
+  function go(d){
+    i = Math.min(Math.max(i+d,0), slides.length-1);
+    render();
+  }
+  document.addEventListener('keydown', e=>{
+    if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)) go(1);
+    if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)) go(-1);
+  });
+  (function(){
+    var root = document.documentElement;
+    var buttons = document.querySelectorAll('#widthCtrl button');
+    function apply(w){
+      root.style.setProperty('--deck-max', w);
+      buttons.forEach(function(b){ b.classList.toggle('active', b.dataset.w === w); });
+      try{ localStorage.setItem('deckWidth', w); }catch(e){}
+    }
+    buttons.forEach(function(b){
+      b.addEventListener('click', function(){ apply(b.dataset.w); });
+    });
+    var saved = '100%';
+    try{ saved = localStorage.getItem('deckWidth') || '100%'; }catch(e){}
+    apply(saved);
+  })();
+  (function(){
+    var btn = document.getElementById('themeToggle');
+    function applyTheme(t){
+      document.body.classList.toggle('light-theme', t === 'light');
+      btn.textContent = t === 'light' ? '\u2600' : '\ud83c\udf19';
+      try{ localStorage.setItem('deckTheme', t); }catch(e){}
+    }
+    btn.addEventListener('click', function(){
+      var next = document.body.classList.contains('light-theme') ? 'dark' : 'light';
+      applyTheme(next);
+    });
+    var savedTheme = 'dark';
+    try{ savedTheme = localStorage.getItem('deckTheme') || 'dark'; }catch(e){}
+    applyTheme(savedTheme);
+  })();
+  (function(){
+    var gear = document.getElementById('ctrlToggle');
+    var panel = document.getElementById('ctrlPanel');
+    gear.addEventListener('click', function(e){
+      e.stopPropagation();
+      var open = panel.classList.toggle('open');
+      gear.classList.toggle('open', open);
+    });
+    document.addEventListener('click', function(e){
+      if(!panel.contains(e.target) && e.target!==gear){
+        panel.classList.remove('open');
+        gear.classList.remove('open');
+      }
+    });
+  })();
+  (function(){
+    var root = document.documentElement;
+    var dec = document.getElementById('fontDec');
+    var inc = document.getElementById('fontInc');
+    var scale = 1;
+    function apply(s){
+      scale = Math.min(1.4, Math.max(0.75, Math.round(s*100)/100));
+      root.style.setProperty('--font-scale', scale);
+      try{ localStorage.setItem('deckFontScale', scale); }catch(e){}
+    }
+    dec.addEventListener('click', function(){ apply(scale - 0.1); });
+    inc.addEventListener('click', function(){ apply(scale + 0.1); });
+    var saved = 1;
+    try{ saved = parseFloat(localStorage.getItem('deckFontScale')) || 1; }catch(e){}
+    apply(saved);
+  })();
+  (function(){
+    var resetBtn = document.getElementById('resetCtrl');
+    if(!resetBtn) return;
+    resetBtn.addEventListener('click', function(){
+      var root = document.documentElement;
+      root.style.setProperty('--deck-max', '100%');
+      document.querySelectorAll('#widthCtrl button').forEach(function(b){
+        b.classList.toggle('active', b.dataset.w === '100%');
+      });
+      try{ localStorage.setItem('deckWidth', '100%'); }catch(e){}
+      document.body.classList.remove('light-theme');
+      var themeBtn = document.getElementById('themeToggle');
+      if(themeBtn) themeBtn.textContent = '\ud83c\udf19';
+      try{ localStorage.setItem('deckTheme', 'dark'); }catch(e){}
+      root.style.setProperty('--font-scale', 1);
+      try{ localStorage.setItem('deckFontScale', 1); }catch(e){}
+    });
+  })();
+  render();
+
+</script>
+</body>
+</html>
